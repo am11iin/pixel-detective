@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pixel Detective, le laboratoire intelligent des images</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f3ff;--panel:#fff;--text:#15163a;--muted:#585b85;--line:#d6d9f7;--a:#0b86a3;--b:#d6246e;--c:#a8630a;--ok:#12793f;--ko:#c01c47;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0b26;--panel:#181540;--text:#f0f0ff;--muted:#a9a6dc;--line:#322d70;--a:#27e3ff;--b:#ff4d9d;--c:#ffd43b;--ok:#46e09a;--ko:#ff6e86;--on:#0d0b26}}
+:root[data-theme="dark"]{--bg:#0d0b26;--panel:#181540;--text:#f0f0ff;--muted:#a9a6dc;--line:#322d70;--a:#27e3ff;--b:#ff4d9d;--c:#ffd43b;--ok:#46e09a;--ko:#ff6e86;--on:#0d0b26}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.55 'Bricolage Grotesque',system-ui,sans-serif;color:var(--text);
+background:radial-gradient(800px 420px at 92% -5%,color-mix(in srgb,var(--b) 18%,transparent),transparent),radial-gradient(700px 400px at 0 0,color-mix(in srgb,var(--a) 15%,transparent),transparent),var(--bg)}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 20px;max-width:1100px;margin:auto}
+.logo{font-weight:800;font-size:1.25rem}.logo b{color:var(--a)}
+nav{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+nav button,.chip,.ic{font:inherit;font-size:.9rem;padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}
+nav button.on,.chip.on{background:var(--a);color:var(--on);border-color:var(--a);font-weight:700}
+nav button.done:not(.on)::after{content:" ✓";color:var(--ok)}
+.score{font-weight:800;color:var(--c);border:1px solid var(--c);border-radius:99px;padding:6px 14px}
+button:focus-visible,canvas:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offset:2px}
+main{max-width:1100px;margin:auto;padding:10px 20px 40px}
+h1{font-size:clamp(2.4rem,8vw,4.2rem);line-height:1;margin:.1em 0 .3em;font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.8rem;margin:.2em 0;font-weight:800}
+h3{margin:.3em 0}
+.lead{color:var(--muted);max-width:60ch;font-size:1.1rem}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:28px;align-items:center;padding:18px 0}
+.btn{font:inherit;font-weight:800;padding:12px 24px;border:0;border-radius:12px;color:var(--on);background:linear-gradient(90deg,var(--a),var(--b));cursor:pointer;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.s{background:var(--panel);color:var(--text);border:1px solid var(--line);padding:9px 16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;margin:16px 0}
+.mc{text-align:left;border-radius:6px 26px 6px 26px}
+.mc i{font-style:normal;font-size:1.9rem}
+canvas{width:100%;max-width:384px;image-rendering:pixelated;border:2px solid var(--line);border-radius:8px;display:block;touch-action:none;background:#000}
+canvas.sm{width:64px}
+.trio{display:flex;gap:10px}.trio figure{margin:0;flex:1;text-align:center;font-size:.85rem;color:var(--muted)}.trio canvas{max-width:none}
+.mono,table.k,input[type=number]{font-family:'JetBrains Mono',monospace}
+table.k{border-collapse:separate;border-spacing:4px;font-size:.85rem}
+table.k td{min-width:50px;padding:6px 4px;text-align:center;border-radius:8px;background:color-mix(in srgb,var(--a) 16%,transparent)}
+table.kn td{background:color-mix(in srgb,var(--b) 18%,transparent)}
+table.k small{display:block;color:var(--muted);font-size:.7rem}
+input[type=number]{width:100%;font-size:.95rem;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px}
+input[type=range]{accent-color:var(--b)}
+.kg{display:inline-grid;grid-template-columns:repeat(3,66px);gap:6px}
+.tip{border-left:4px solid var(--c);padding:8px 14px;background:color-mix(in srgb,var(--c) 13%,transparent);border-radius:0 12px 12px 0;margin:12px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.sw{height:34px;border-radius:8px;border:2px solid var(--line);margin:8px 0}
+.opt{display:block;width:100%;text-align:left;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0;cursor:pointer}
+.opt:hover{border-color:var(--a)}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 20%,transparent)}
+.opt.ko{border-color:var(--ko);background:color-mix(in srgb,var(--ko) 20%,transparent)}
+.vz{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin:10px 0}.vz figure{margin:0;text-align:center}.vz figcaption{font-size:.8rem;color:var(--muted);max-width:220px;margin-top:4px}
+table.k.sg td{min-width:36px;padding:5px 2px}
+.goal{margin:16px 0 10px;font-weight:600;color:var(--muted)}.goal.ok{color:var(--ok)}
+.btn:disabled,nav button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+nav button.lk{border-style:dashed}
+#home .btn{animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--b) 50%,transparent)}50%{box-shadow:0 0 0 12px color-mix(in srgb,var(--b) 0%,transparent)}}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:10px 20px 30px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🕵️ Pixel <b>Detective</b></div>
+  <nav id="nav" aria-label="Missions"></nav>
+  <span class="score" id="sc" title="Note de l’examen">0/100</span>
+  <button class="ic" id="th" aria-label="Changer de thème">◐</button>
+</header>
+<main>
+<section id="home">
+  <div class="hero">
+    <div>
+      <h1>Une image cache ses secrets. Mène l’enquête.</h1>
+      <p class="lead">Cinq missions pour expérimenter la convolution, puis un examen noté sur 100. Tu observes d’abord, le calcul vient ensuite.</p>
+      <p><button class="btn" data-go="m1">Commencer l’enquête</button></p>
+    </div>
+    <div class="card">
+      <div class="trio" style="gap:12px"><figure><canvas id="ha"></canvas>Avant</figure><figure><canvas id="hb"></canvas>Après</figure></div>
+      <p class="mono" id="ht" style="margin:14px 0 0;min-height:3em"></p>
+    </div>
+  </div>
+  <div class="grid" id="cards"></div>
+</section>
+
+<section id="m1" hidden>
+  <h2>Mission 1 : le monde des pixels</h2>
+  <p class="lead">Une image est une grille de petits carrés, les pixels. Chacun porte un nombre de 0 (noir) à 255 (blanc). Passe la souris ou le doigt sur l’image.</p>
+  <div class="grid">
+    <div class="card"><canvas id="c1"></canvas><div class="row"><label><input type="checkbox" id="n1"> Afficher les valeurs</label></div></div>
+    <div class="card"><h3>Rapport sur le pixel</h3>
+      <p id="i1" aria-live="polite">Survole un carré pour lire sa valeur.</p><div class="sw" id="sw"></div>
+      <p>Taille réelle, agrandie ×4 :</p><canvas id="c1s" class="sm"></canvas>
+      <div class="tip">Cette image n’a que 256 pixels. Une photo de téléphone en compte plusieurs millions.</div></div>
+  </div>
+  <p class="goal" id="g1"></p><button class="btn nxt" data-go="m2" disabled>Mission suivante</button>
+</section>
+
+<section id="m2" hidden>
+  <h2>Mission 2 : le pixel et ses voisins</h2>
+  <p class="lead">Un filtre change un pixel en regardant autour de lui. Clique sur un pixel de la grille de gauche : il devient la moyenne de lui-même et de ses 8 voisins.</p>
+  <div class="grid">
+    <div class="card"><p><b>Avant</b></p><canvas id="c2a" aria-label="Petite image de 6 sur 6 pixels"></canvas></div>
+    <div class="card"><p><b>Après</b></p><canvas id="c2b"></canvas></div>
+    <div class="card"><p id="t2" class="mono" aria-live="polite">Clique sur un pixel de la grille de gauche.</p>
+      <div class="row"><button class="btn s" id="all2">Tout calculer</button><button class="btn s" id="rs2">Effacer</button></div>
+      <div class="tip">Cette moyenne est le filtre flou. Sur les bords, on répète le pixel le plus proche. Dans la mission suivante, chaque voisin aura un poids différent, appelé coefficient.</div></div>
+  </div>
+  <p class="goal" id="g2"></p><button class="btn nxt" data-go="m3" disabled>Mission suivante</button>
+</section>
+
+<section id="m3" hidden>
+  <h2>Mission 3 : le calcul pas à pas</h2>
+  <p class="lead">Regarde un pixel être calculé : chaque voisin est multiplié par son coefficient, puis tout est additionné. L’image de sortie se construit pixel après pixel.</p>
+  <div class="row" id="ch3"></div>
+  <div class="grid">
+    <div class="card"><p><b>Image d’origine</b></p><canvas id="c3a"></canvas></div>
+    <div class="card"><p><b>Image en construction</b></p><canvas id="c3b"></canvas></div>
+    <div class="card"><div class="row"><button class="btn s" id="nx3">Pixel suivant</button><button class="btn s" id="au3">Lecture auto</button><button class="btn s" id="rs3">Recommencer</button></div>
+      <label><input type="checkbox" id="pr"> Mode prédiction</label><div id="pq" aria-live="polite"></div>
+      <div id="calc3"></div><div id="k3"></div><div class="tip" id="t3"></div></div>
+  </div>
+  <p class="goal" id="g3"></p><button class="btn nxt" data-go="m4" disabled>Mission suivante</button>
+</section>
+
+<section id="m4" hidden>
+  <h2>Mission 4 : le laboratoire</h2>
+  <p class="lead">À toi de créer le filtre. Modifie les 9 coefficients et le diviseur : l’image change en direct. Le mode impulsion (un seul pixel blanc) montre ce que le noyau fait à un pixel.</p>
+  <div class="row" id="pre4"></div><div class="row" id="im4"></div>
+  <div class="grid">
+    <div class="card"><p><b>Avant</b></p><canvas id="c4a"></canvas></div>
+    <div class="card"><p><b>Après</b></p><canvas id="c4b"></canvas></div>
+    <div class="card"><p><b>Ton noyau</b></p><div class="kg" id="kin"></div>
+      <p><label>Diviseur <input type="number" id="dv" style="width:80px"></label></p>
+      <p id="rd" aria-live="polite"></p><p><b>Défis</b></p><div class="row" id="ch4"></div></div>
+  </div>
+  <div class="tip">Astuces : pour éclaircir, augmente le coefficient central ou diminue le diviseur ; pour assombrir, fais l’inverse ; pour ne garder que les contours, la somme des coefficients doit valoir 0.</div>
+  <div class="tip" id="t4">En mode impulsion, le pixel blanc s’étale en une tache qui dessine les coefficients du noyau, tournés d’un demi-tour.</div>
+  <p class="goal" id="g4"></p><button class="btn nxt" data-go="m5" disabled>Mission suivante</button>
+</section>
+
+<section id="m5" hidden>
+  <h2>Mission 5 : le noyau mystère</h2>
+  <p class="lead">Voici une image avant et après un filtre caché. Retrouve lequel a été utilisé.</p>
+  <div class="grid">
+    <div class="card"><p><b>Avant</b></p><canvas id="c5a"></canvas></div>
+    <div class="card"><p><b>Après</b></p><canvas id="c5b"></canvas></div>
+    <div class="card"><div id="o5"></div><div id="f5" aria-live="polite"></div></div>
+  </div>
+  <p class="goal" id="g5"></p><button class="btn nxt" data-go="m6" disabled>Passer à l’examen</button>
+</section>
+
+<section id="m6" hidden>
+  <h2>Examen final</h2>
+  <p class="lead">Une note sur 100 : cinq questions simples (une par mission, 8 points chacune), puis cinq questions plus difficiles (12 points chacune). Chaque question est accompagnée d’une image ou d’une grille pour t’aider.</p>
+  <div class="card" id="qz" style="max-width:720px"></div>
+</section>
+</main>
+<footer>Projet pédagogique de traitement d’image : la convolution expliquée par l’expérience.</footer>
+
+<script>
+const N=16,$=s=>document.querySelector(s),css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+/* Images de démonstration */
+const img=[];let seed=7;const rnd=()=>(seed=seed*16807%2147483647)/2147483647;
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){let v=45+x*4;
+  if(Math.hypot(x-5.5,y-5.5)<3.8)v=215;
+  if(x>=9&&x<=14&&y>=6&&y<=14)v=105;
+  if(x>=10&&x<=13&&y>=8&&y<=10)v=235;
+  img.push(Math.max(0,Math.min(255,Math.round(v+(rnd()-.5)*28))))}
+const imp=img.map((_,i)=>i==8*N+8?255:0);
+/* Noyaux */
+const K={
+ flou:{n:'Flou',k:[1,1,1,1,1,1,1,1,1],d:9,t:'chaque pixel devient la moyenne de ses 9 voisins. Le grain et les petits détails s’estompent.'},
+ nettete:{n:'Netteté',k:[0,-1,0,-1,5,-1,0,-1,0],d:1,t:'le centre est renforcé et les voisins sont soustraits. Les bords ressortent.'},
+ contours:{n:'Contours',k:[-1,-1,-1,-1,8,-1,-1,-1,-1],d:1,t:'seuls les endroits où la valeur change vite restent clairs. Les zones uniformes deviennent noires.'},
+ bords:{n:'Bords verticaux',k:[-1,0,1,-2,0,2,-1,0,1],d:1,t:'il repère les passages du sombre au clair de gauche à droite, donc les lignes verticales.'},
+ ident:{n:'Identité',k:[0,0,0,0,1,0,0,0,0],d:1,t:'chaque pixel garde sa valeur. L’image ne change pas.'}};
+const kk=a=>a.map(f=>[f,K[f].n]);
+const cl=v=>Math.max(0,Math.min(255,Math.round(v)));
+const px=(s,x,y)=>s[Math.min(N-1,Math.max(0,y))*N+Math.min(N-1,Math.max(0,x))];
+const raw=(k,s,x,y)=>{let r=0;for(let j=0;j<3;j++)for(let i=0;i<3;i++)r+=px(s,x+i-1,y+j-1)*k[j*3+i];return r};
+const conv=(k,d,s=img)=>s.map((_,i)=>cl(raw(k,s,i%N,(i/N)|0)/d));
+const fc=f=>conv(K[f].k,K[f].d);
+function draw(c,data,cell,o={}){const n=Math.round(Math.sqrt(data.length));c.width=c.height=n*cell;const g=c.getContext('2d'),em=css('--line');
+ data.forEach((v,i)=>{const x=i%n,y=(i/n)|0;g.fillStyle=v==null?em:`rgb(${v},${v},${v})`;g.fillRect(x*cell,y*cell,cell,cell);
+  if(o.nums&&v!=null){g.fillStyle=v>128?'#000':'#fff';g.font=`${cell*.38}px monospace`;g.textAlign='center';g.textBaseline='middle';g.fillText(v,x*cell+cell/2,y*cell+cell/2)}});
+ (o.boxes||[]).forEach(([x,y,w,h,col])=>{g.lineWidth=3;g.strokeStyle=css(col);g.strokeRect(x*cell+1.5,y*cell+1.5,w*cell-3,h*cell-3)})}
+const cellAt=(e,c,n=N)=>{const r=c.getBoundingClientRect(),m=v=>Math.min(n-1,Math.max(0,Math.floor(v*n)));return{x:m((e.clientX-r.left)/r.width),y:m((e.clientY-r.top)/r.height)}};
+const ktab=(k,d)=>'<table class="k kn">'+[0,1,2].map(j=>'<tr>'+[0,1,2].map(i=>`<td>${k[j*3+i]}</td>`).join('')+'</tr>').join('')+'</table>'+(d>1?`<p class="mono">÷ ${d}</p>`:'');
+const chips=(el,items,cur,cb)=>{el.innerHTML=items.map(([f,n])=>`<button class="chip${f==cur?' on':''}" data-f="${f}">${n}</button>`).join('');
+ el.onclick=e=>{const b=e.target.closest('[data-f]');if(!b)return;[...el.children].forEach(c=>c.classList.toggle('on',c===b));cb(b.dataset.f)}};
+
+/* Mission 1 */
+const c1=$('#c1'),ex1=new Set();
+function r1(h){draw(c1,img,24,{nums:$('#n1').checked,boxes:h?[[h.x,h.y,1,1,'--b']]:[]});draw($('#c1s'),img,4)}
+c1.onpointermove=c1.onpointerdown=e=>{const p=cellAt(e,c1),v=img[p.y*N+p.x];r1(p);ex1.add(p.x+','+p.y);prog();
+ $('#i1').innerHTML=`Pixel <b>(${p.x}, ${p.y})</b> : valeur <b>${v}</b> sur 255, ${v<64?'très sombre':v<128?'sombre':v<192?'clair':'très clair'}.`;
+ $('#sw').style.background=`rgb(${v},${v},${v})`};
+$('#n1').onchange=()=>r1();
+
+/* Mission 2 : le pixel et ses voisins */
+const G=Array.from({length:36},(_,i)=>i%6<3?40:200);G[7]=200;G[28]=40;
+const o2=Array(36).fill(null);let ps2=null;
+const gv=(x,y)=>G[Math.min(5,Math.max(0,y))*6+Math.min(5,Math.max(0,x))];
+function nb(x,y){const l=[];for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++)l.push(gv(x+i,y+j));const t=l.reduce((a,b)=>a+b,0);return[l,t,Math.round(t/9)]}
+function r2(){const p=ps2;
+ draw($('#c2a'),G,56,{nums:true,boxes:p?[[p.x-1,p.y-1,3,3,'--b'],[p.x,p.y,1,1,'--a']]:[]});
+ draw($('#c2b'),o2,56,{nums:true,boxes:p?[[p.x,p.y,1,1,'--b']]:[]});
+ if(p){const[l,t,m]=nb(p.x,p.y);$('#t2').innerHTML=`Les 9 valeurs : ${l.join(' + ')} = ${t}.<br>Moyenne : ${t} ÷ 9 = <b>${m}</b>.<br>Le pixel (${p.x}, ${p.y}) passe de <b>${gv(p.x,p.y)}</b> à <b>${m}</b>.`}prog()}
+const c2=$('#c2a');
+c2.onpointerdown=c2.onpointermove=e=>{if(e.type=='pointermove'&&e.pointerType!='mouse'&&!e.buttons)return;ps2=cellAt(e,c2,6);o2[ps2.y*6+ps2.x]=nb(ps2.x,ps2.y)[2];r2()};
+$('#all2').onclick=()=>{o2.forEach((_,i)=>o2[i]=nb(i%6,(i/6)|0)[2]);r2()};
+$('#rs2').onclick=()=>{o2.fill(null);ps2=null;$('#t2').textContent='Clique sur un pixel de la grille de gauche.';r2()};
+
+/* Mission 3 : pas à pas */
+let f3='flou',q=-1,sh=9,tm3=null,auto=0;const out3=Array(N*N).fill(null);
+const ov=()=>cl(raw(K[f3].k,img,q%N,(q/N)|0)/K[f3].d);
+function r3(){const k=K[f3],j0=Math.max(q,0),x=j0%N,y=(j0/N)|0;
+ draw($('#c3a'),img,20,{nums:true,boxes:[[x-1,y-1,3,3,'--b']]});draw($('#c3b'),out3,20,{boxes:[[x,y,1,1,'--b']]});
+ let h='<table class="k">',ps=0;
+ for(let j=0;j<3;j++){h+='<tr>';for(let i=0;i<3;i++){const m=j*3+i,v=px(img,x+i-1,y+j-1),w=k.k[m],on=m<sh;if(on)ps+=v*w;
+  h+=`<td style="${on?'':'opacity:.45'}">${v}${on?`<small>× ${w} = ${v*w}</small>`:''}</td>`}h+='</tr>'}
+ $('#calc3').innerHTML=h+`</table><p class="mono">Somme = ${ps}${sh>=9?`${k.d>1?` ÷ ${k.d}`:''} = <b>${ov()}</b>`:''}</p>`;
+ $('#k3').innerHTML=ktab(k.k,k.d);$('#t3').innerHTML=`<b>${k.n}</b> : ${k.t}`}
+const dn3=new Set();
+function wr3(){out3[q]=ov();dn3.add(f3+q);prog()}
+function anim(){r3();tm3=setInterval(()=>{sh++;if(sh>=9){clearInterval(tm3);sh=9;wr3();if(auto&&!$('#pr').checked)setTimeout(()=>auto&&next(),250)}r3()},auto?50:150)}
+function next(){clearInterval(tm3);if(q>=0&&sh<9){sh=9;wr3()}
+ q=(q+1)%(N*N);if(!q)out3.fill(null);sh=0;$('#pq').innerHTML='';
+ if($('#pr').checked){$('#pq').innerHTML='<p><b>Prédis :</b> que devient le pixel central ?</p>'+['plus clair','plus foncé','presque pareil'].map(t=>`<button class="chip" data-p="${t}">${t}</button>`).join('');r3()}else anim()}
+$('#pq').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;const c=px(img,q%N,(q/N)|0),d=ov()-c,t=d>12?'plus clair':d<-12?'plus foncé':'presque pareil';
+ $('#pq').innerHTML=`<div class="tip"><b>${b.dataset.p==t?'Bien prédit !':'Pas tout à fait.'}</b> Le pixel passe de ${c} à ${ov()} : il devient ${t}.</div>`;anim()};
+$('#nx3').onclick=next;
+$('#rs3').onclick=()=>{clearInterval(tm3);q=-1;sh=9;out3.fill(null);next()};
+$('#au3').onclick=()=>{auto=!auto;$('#au3').textContent=auto?'Pause':'Lecture auto';if(auto){$('#pr').checked=false;if(sh>=9)next()}};
+chips($('#ch3'),kk(['flou','nettete','contours']),'flou',f=>{f3=f;$('#rs3').click()});
+
+/* Mission 4 : laboratoire */
+let kl=[0,-1,0,-1,5,-1,0,-1,0],dl=1,sl='scene';const dn=new Set();
+const D=[['Éclaircir l’image',s=>s>1.05],['Assombrir l’image',s=>s>0&&s<.95],['Ne garder que les contours',(s,k)=>Math.abs(s)<.01&&k.some(v=>v)]];
+function rl(){const s=sl=='scene'?img:imp,n=sl!='scene',sum=kl.reduce((a,b)=>a+b,0)/dl;
+ draw($('#c4a'),s,20,{nums:n});draw($('#c4b'),conv(kl,dl,s),20,{nums:n});
+ $('#rd').innerHTML=`Somme des coefficients ÷ diviseur = <b>${+sum.toFixed(2)}</b> : `+(Math.abs(sum)<.01?'seuls les changements brusques survivent.':sum>1.05?'l’image devient plus claire.':sum<.95?'l’image devient plus sombre.':'la luminosité moyenne est conservée.');
+ D.forEach((d,i)=>{if(d[1](sum,kl))dn.add(i)});
+ $('#ch4').innerHTML=D.map((d,i)=>`<span class="chip${dn.has(i)?' on':''}">${dn.has(i)?'✓':'○'} ${d[0]}</span>`).join('');
+ $('#t4').hidden=!n;prog()}
+$('#kin').innerHTML=Array.from({length:9},(_,i)=>`<input type="number" data-i="${i}" aria-label="Coefficient ${i+1}">`).join('');
+const syncIn=()=>{$('#kin').querySelectorAll('input').forEach((e,i)=>e.value=kl[i]);$('#dv').value=dl};
+$('#kin').oninput=e=>{kl[+e.target.dataset.i]=+e.target.value||0;rl()};
+$('#dv').oninput=e=>{dl=+e.target.value||1;rl()};
+chips($('#pre4'),kk(['ident','flou','nettete','contours','bords']),'nettete',f=>{kl=[...K[f].k];dl=K[f].d;syncIn();rl()});
+chips($('#im4'),[['scene','Image test'],['imp','Impulsion : 1 pixel blanc']],'scene',v=>{sl=v;rl()});
+
+/* Mission 5 : noyau mystère */
+let h5=-1,ok5=0,tot5=0;const MK=['flou','nettete','contours','bords'];
+const r5=()=>{draw($('#c5a'),img,20);draw($('#c5b'),fc(MK[h5]),20)};
+function m5(){let n;do n=Math.floor(Math.random()*4);while(n==h5);h5=n;r5();
+ $('#o5').innerHTML=MK.map(k=>`<button class="opt" data-k="${k}">${K[k].n}</button>`).join('');$('#o5').dataset.d='';$('#f5').innerHTML=''}
+$('#o5').onclick=e=>{const b=e.target.closest('[data-k]');if(!b||$('#o5').dataset.d)return;$('#o5').dataset.d='1';
+ const f=MK[h5],ok=b.dataset.k==f;tot5++;ok5+=ok;b.classList.add(ok?'ok':'ko');if(!ok)$('#o5').querySelector(`[data-k="${f}"]`).classList.add('ok');
+ $('#f5').innerHTML=`<div class="tip"><b>${ok?'Bien vu !':'Raté.'}</b> C’était « ${K[f].n} » : ${K[f].t}</div>${ktab(K[f].k,K[f].d)}<p>Réussis : ${ok5} sur ${tot5}</p><button class="btn" id="n5">Nouveau mystère</button>`;$('#n5').onclick=m5;prog()};
+
+/* Mission 6 : examen sur 100 */
+const gt=(a,cap,o={})=>{const n=Math.round(Math.sqrt(a.length));return`<figure><table class="k${o.k?' kn':''}${n>3?' sg':''}">`+Array.from({length:n},(_,j)=>'<tr>'+Array.from({length:n},(_,i)=>`<td${o.hi==j*n+i?' style="outline:2px solid var(--b)"':''}>${a[j*n+i]}</td>`).join('')+'</tr>').join('')+`</table><figcaption>${cap}</figcaption></figure>`};
+const pic=(d,cap)=>{const c=document.createElement('canvas');draw(c,d,8);return`<figure><img src="${c.toDataURL()}" width="128" height="128" alt="${cap}" style="image-rendering:pixelated;border:2px solid var(--line);border-radius:8px"><figcaption>${cap}</figcaption></figure>`};
+const bar=()=>{const c=document.createElement('canvas');c.width=256;c.height=24;const g=c.getContext('2d'),r=g.createLinearGradient(0,0,256,0);r.addColorStop(0,'#000');r.addColorStop(1,'#fff');g.fillStyle=r;g.fillRect(0,0,256,24);return`<figure><img src="${c.toDataURL()}" width="256" height="24" alt="Dégradé du noir au blanc" style="border:2px solid var(--line);border-radius:6px"><figcaption>Du noir (0) à gauche au blanc à droite</figcaption></figure>`};
+const i5=Array.from({length:25},(_,i)=>i==12?255:0),b5=i5.map((_,i)=>Math.abs(i%5-2)<=1&&Math.abs(((i/5)|0)-2)<=1?28:0);
+const R=(p,m,q,o,a,e,v)=>({p,m,q,o,a,e,v});
+const Q=[
+ R(8,'m1','Quelle est la valeur d’un pixel blanc dans nos images ?',['0','128','255'],2,'Une valeur va de 0 (noir) à 255 (blanc).',bar),
+ R(8,'m2','Un flou remplace le pixel central (entouré) par la moyenne des 9 pixels. Quelle sera sa nouvelle valeur ?',['20','28','92','252'],1,'8 × 20 + 92 = 252, puis 252 ÷ 9 = 28.',()=>gt([20,20,20,20,20,20,20,20,92],'Le pixel central et ses 8 voisins',{hi:4})),
+ R(8,'m3','Avec un noyau 3 × 3 posé sur le pixel entouré, combien de pixels entrent dans le calcul ?',['4','9','3'],1,'Le pixel central et ses 8 voisins : 9 produits à additionner.',()=>gt([30,55,80,40,100,60,20,90,70],'Noyau 3 × 3 posé sur l’image',{hi:4})),
+ R(8,'m4','Un seul pixel blanc sur fond noir, avant et après un filtre. Que révèle la tache obtenue ?',['Une image blanche','Rien du tout','Les coefficients du noyau'],2,'Le pixel blanc s’étale en une petite tache qui dessine les coefficients du noyau.',()=>gt(i5,'Avant')+gt(b5,'Après')),
+ R(8,'m5','Quel filtre a transformé l’image de gauche en image de droite ?',['Contours','Flou','Netteté'],0,'Les contours ne gardent que les endroits où les valeurs changent brusquement : le reste devient noir.',()=>pic(img,'Avant')+pic(fc('contours'),'Après')),
+ R(12,'m3','Calcule le pixel de sortie : chaque pixel est multiplié par le coefficient du noyau, puis la somme est divisée par 6.',['300','50','60','30'],1,'Produits : 0, 20, 0, 40, 100, 60, 0, 80, 0. Somme : 300. Puis 300 ÷ 6 = 50.',()=>gt([10,20,30,40,50,60,70,80,90],'Pixels',{hi:4})+gt([0,1,0,1,2,1,0,1,0],'Noyau (÷ 6)',{k:1})),
+ R(12,'m5','Le noyau ci-contre passe sur une zone où tous les pixels valent 80. Que vaut le résultat ?',['80','240','−240','0'],3,'−80 × 3 + 80 × 3 = 0. Sans variation entre la gauche et la droite, ce noyau ne détecte rien.',()=>gt(Array(9).fill(80),'Pixels',{hi:4})+gt([-1,0,1,-1,0,1,-1,0,1],'Noyau',{k:1})),
+ R(12,'m4','Avec ce noyau de netteté, quelle valeur obtient-on pour le pixel central (150) ?',['350','150','255','100'],2,'5 × 150 − 4 × 100 = 350. Une valeur ne dépasse pas 255 : le résultat est limité à 255.',()=>gt([100,100,100,100,150,100,100,100,100],'Pixels',{hi:4})+gt([0,-1,0,-1,5,-1,0,-1,0],'Noyau',{k:1})),
+ R(12,'m4','Dans un flou 3 × 3, tu oublies de diviser par 9. Que se passe-t-il ?',['L’image devient presque blanche','Rien ne change','L’image devient noire','L’image devient plus nette'],0,'La somme des coefficients vaut 9 au lieu de 1 : les valeurs sont multipliées par 9 et saturent à 255.',()=>pic(img,'Image d’origine')+gt(Array(9).fill(1),'Noyau sans ÷ 9',{k:1})),
+ R(12,'m4','Voici une image noire avec un seul pixel blanc (255). Après un flou 3 × 3 (÷ 9), que voit-on ?',['Un seul pixel blanc inchangé','Une image noire','Une tache 3 × 3 de gris foncé (environ 28)','Une image entièrement grise'],2,'255 ÷ 9 ≈ 28 : le pixel et ses 8 voisins prennent cette valeur, le reste reste noir.',()=>gt(i5,'Avant le flou'))];
+let qi=0,pts=0,sp=0;const wr=new Set(),L={home:'Accueil',m1:'1 Pixels',m2:'2 Voisins',m3:'3 Pas à pas',m4:'4 Labo',m5:'5 Mystère',m6:'6 Examen'};
+const sc=()=>$('#sc').textContent=pts+'/100';
+function quiz(){const b=$('#qz');
+ if(qi>=Q.length){fin.add('m6');navUp();const g=pts>=85?'détective légendaire 🏆':pts>=65?'détective confirmé 🔎':pts>=40?'détective en progrès 🕵️':'apprenti détective 🕵️';
+  b.innerHTML=`<h3>Enquête terminée</h3><p class="lead">Note : <b>${pts}/100</b>. Grade : ${g}.</p><p>Questions simples : <b>${sp}/40</b>. Questions difficiles : <b>${pts-sp}/60</b>.</p>`
+   +(wr.size?`<p>À revoir :</p><div class="row">${[...wr].sort().map(m=>`<button class="chip" data-go="${m}">${L[m]}</button>`).join('')}</div>`:'<div class="tip">Aucune erreur : tu as compris la convolution !</div>')
+   +'<button class="btn" id="rp">Refaire l’examen</button>';
+  $('#rp').onclick=()=>{qi=pts=sp=0;wr.clear();b.dataset.d='';sc();quiz()};return}
+ const e=Q[qi];
+ b.innerHTML=`<p><b>${e.p==8?'Partie 1, question simple':'Partie 2, question difficile'}</b> (question ${qi+1} sur ${Q.length}, ${e.p} points)</p><h3>${e.q}</h3>`+(e.v?`<div class="vz">${e.v()}</div>`:'')+e.o.map((t,i)=>`<button class="opt" data-i="${i}">${t}</button>`).join('')+'<div id="fb" aria-live="polite"></div>';
+ b.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{if(b.dataset.d===''+qi)return;b.dataset.d=''+qi;
+  const ok=+o.dataset.i==e.a;if(ok){pts+=e.p;if(e.p==8)sp+=8;sc()}else wr.add(e.m);
+  b.querySelectorAll('.opt')[e.a].classList.add('ok');if(!ok)o.classList.add('ko');
+  $('#fb').innerHTML=`<div class="tip"><b>${ok?`Bien joué, +${e.p} points !`:'Raté.'}</b> ${e.e}</div><button class="btn" id="nx">${qi+1<Q.length?'Question suivante':'Voir ma note'}</button>`;
+  $('#nx').onclick=()=>{qi++;quiz()}})}
+
+/* Navigation */
+let ha=null,hf=0;
+const HT=['Flou : les détails s’adoucissent…','Netteté : les bords ressortent…','Contours : tu vois enfin ce qui change. À toi de jouer !'];
+function homeAnim(){clearInterval(ha);const fl=['flou','nettete','contours'];let res,p;
+ const start=()=>{res=fc(fl[hf]);p=0;$('#ht').textContent=HT[hf]};
+ const show=()=>{const e=p>=N*N,x=Math.min(p,N*N-1)%N,y=(Math.min(p,N*N-1)/N)|0;
+  draw($('#ha'),img,10,{boxes:e?[]:[[x-1,y-1,3,3,'--b']]});draw($('#hb'),res.map((v,i)=>i<p?v:null),10,{boxes:e?[]:[[x,y,1,1,'--b']]})};
+ start();
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){p=N*N;show();return}
+ ha=setInterval(()=>{p+=2;if(p>N*N+28){hf=(hf+1)%3;start()}show()},40)}
+const M=[['🔍','Le monde des pixels','Zoome sur une image et découvre ses petits carrés.'],['👥','Le pixel et ses voisins','Remplace un pixel par la moyenne de son entourage.'],['🧮','Le calcul pas à pas','Vois chaque produit et chaque somme, pixel par pixel.'],['🧪','Le laboratoire','Crée ton propre noyau et teste l’impulsion.'],['🕵️','Le noyau mystère','Devine quel filtre a transformé l’image.'],['🏆','L’examen final','Une note sur 100 pour valider ta compréhension.']];
+$('#cards').innerHTML=M.map(m=>`<div class="card mc"><i>${m[0]}</i><h3>${m[1]}</h3><span class="lead">${m[2]}</span></div>`).join('');
+const ORD=['m1','m2','m3','m4','m5','m6'],fin=new Set();let view='home';
+const isOpen=k=>k=='home'||ORD.slice(0,ORD.indexOf(k)).every(m=>fin.has(m));
+const PG={m1:[()=>ex1.size,6,'explore 6 pixels différents'],m2:[()=>o2.filter(v=>v!=null).length,4,'calcule la moyenne de 4 pixels différents'],m3:[()=>dn3.size,3,'termine le calcul de 3 pixels'],m4:[()=>dn.size,3,'réussis les 3 défis du laboratoire'],m5:[()=>ok5,2,'trouve 2 filtres mystères'],};
+function prog(){let nw=0;for(const m in PG){const[f,need,txt]=PG[m],cur=f();if(cur>=need&&!fin.has(m)){fin.add(m);nw=1}
+ const ok=fin.has(m),el=$('#g'+m[1]);el.className='goal'+(ok?' ok':'');
+ el.textContent=ok?'✓ Mission réussie ! Tu peux passer à la suite.':`Objectif : ${txt} (${Math.min(cur,need)} sur ${need}).`;
+ $('#'+m+' .nxt').disabled=!ok}
+ if(nw)navUp()}
+function navUp(){$('#nav').innerHTML=Object.keys(L).map(k=>`<button data-go="${k}" class="${k==view?'on':''} ${fin.has(k)?'done':''} ${isOpen(k)?'':'lk'}"${k==view?' aria-current="page"':''}${isOpen(k)?'':' disabled title="Réussis la mission précédente pour la débloquer"'}>${L[k]}</button>`).join('')}
+const init={home(){homeAnim()},m1(){r1()},m2(){r2()},
+ m3(){$('#pq').innerHTML='';if(q<0)next();else{if(sh<9){sh=9;wr3()}r3()}},
+ m4(){syncIn();rl()},m5(){h5<0?m5():r5()},m6(){if(!$('#qz').innerHTML)quiz()}};
+function go(v){if(!isOpen(v))return;clearInterval(tm3);clearInterval(ha);auto=0;$('#au3').textContent='Lecture auto';view=v;Object.keys(L).forEach(k=>$('#'+k).hidden=k!=v);init[v]();prog();navUp();window.scrollTo(0,0)}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
+$('#th').onclick=()=>{const d=matchMedia('(prefers-color-scheme: dark)').matches,r=document.documentElement,cur=r.dataset.theme||(d?'dark':'light');r.dataset.theme=cur=='dark'?'light':'dark';init[view]()};
+go('home');
+</script>
+</body>
+</html>
