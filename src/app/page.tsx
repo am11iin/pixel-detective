@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import { MissionKey } from '@/types';
 import { Header } from '@/components/Header';
 import { HomeSection } from '@/components/HomeSection';
@@ -12,18 +12,21 @@ import { Mission5Mystery } from '@/components/Mission5Mystery';
 import { Mission6Exam } from '@/components/Mission6Exam';
 import { sounds } from '@/utils/sound';
 
+const emptySubscribe = () => () => {};
+
 export default function App() {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
   const [currentView, setCurrentView] = useState<MissionKey>('home');
   const [examScore, setExamScore] = useState<number>(0);
   const [finishedMissions, setFinishedMissions] = useState<Set<MissionKey>>(new Set());
   const [isDark, setIsDark] = useState<boolean>(true);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [totalXp, setTotalXp] = useState<number>(50);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [totalXp, setTotalXp] = useState<number>(1250);
 
   // Sync dark class on html root
   useEffect(() => {
@@ -70,8 +73,8 @@ export default function App() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-[#080b14] text-cyan-400 flex flex-col items-center justify-center font-mono gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-400 to-pink-500 animate-spin flex items-center justify-center text-xl">
+      <div className="min-h-screen bg-[#060814] text-cyan-400 flex flex-col items-center justify-center font-mono gap-3">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-400 to-indigo-500 animate-spin flex items-center justify-center text-xl">
           🕵️
         </div>
         <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">Chargement de Pixel Detective...</p>
@@ -80,7 +83,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080b14] text-slate-100 flex flex-col selection:bg-pink-500 selection:text-white">
+    <div className="min-h-screen bg-[#060814] text-slate-100 flex flex-col selection:bg-purple-600 selection:text-white">
       {/* Game HUD Navbar */}
       <Header
         currentView={currentView}
@@ -154,12 +157,52 @@ export default function App() {
       </main>
 
       {/* Game Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950/90 py-6 px-4 text-center text-xs sm:text-sm text-slate-500">
-        <p className="flex items-center justify-center gap-2">
-          <span>🕵️</span>
-          <span><b>Pixel Detective • ConvoQuest</b> — Studio Éducatif de Convolution.</span>
-          <span>🎮</span>
-        </p>
+      <footer className="border-t border-indigo-950/80 bg-[#060815]/95 py-8 px-4 text-center text-xs sm:text-sm text-slate-400">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🕵️</span>
+            <span className="font-bold text-white tracking-wide">Pixel Detective • ConvoQuest</span>
+            <span className="text-slate-600">|</span>
+            <span className="text-xs text-indigo-400">Laboratoire Interactif de Convolution</span>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-medium text-slate-400">
+            <button
+              onClick={() => handleNavigate('home')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Accueil
+            </button>
+            <button
+              onClick={() => {
+                handleNavigate('home');
+                setTimeout(() => {
+                  const el = document.getElementById('modules');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Modules
+            </button>
+            <button
+              onClick={() => {
+                handleNavigate('home');
+                setTimeout(() => {
+                  const el = document.getElementById('team');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="hover:text-cyan-300 text-indigo-400 font-bold transition-colors cursor-pointer"
+            >
+              Notre Équipe
+            </button>
+          </div>
+
+          <div className="text-[11px] text-slate-500 font-mono">
+            © 2026 Pixel Detective Crew • Mohamed Amine Sellami, Abderrahmane Ferhat & Chakib Kedjour
+          </div>
+        </div>
       </footer>
     </div>
   );

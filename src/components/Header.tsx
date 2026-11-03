@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { MissionKey } from '@/types';
 import { sounds } from '@/utils/sound';
+import { Zap, Gamepad2, Volume2, VolumeX, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   currentView: MissionKey;
@@ -16,8 +18,8 @@ interface HeaderProps {
   totalXp: number;
 }
 
-const NAV_ITEMS: Array<{ key: MissionKey; label: string; icon: string; short: string }> = [
-  { key: 'home', label: 'Base', icon: '🏠', short: 'Base' },
+const MISSIONS: Array<{ key: MissionKey; label: string; icon: string; short: string }> = [
+  { key: 'home', label: 'Accueil', icon: '🏠', short: 'Base' },
   { key: 'm1', label: '1. Pixels', icon: '🔍', short: '1. Pixels' },
   { key: 'm2', label: '2. Voisins', icon: '👥', short: '2. Voisins' },
   { key: 'm3', label: '3. Coeffs', icon: '🧮', short: '3. Coeffs' },
@@ -31,12 +33,13 @@ export function Header({
   onNavigate,
   examScore,
   finishedMissions,
-  isDark,
-  onToggleTheme,
   soundEnabled,
   onToggleSound,
   totalXp,
 }: HeaderProps) {
+  const [modulesDropdownOpen, setModulesDropdownOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
   const ORDER: MissionKey[] = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'];
 
   const isUnlocked = (k: MissionKey) => {
@@ -55,42 +58,180 @@ export function Header({
 
   const rank = getRank();
 
+  const scrollToAnchor = (anchorId: string) => {
+    if (currentView !== 'home') {
+      onNavigate('home');
+      setTimeout(() => {
+        const el = document.getElementById(anchorId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById(anchorId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-2xl bg-slate-950/85 border-b border-slate-800/80 px-3 sm:px-6 py-2.5 transition-colors">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
-        {/* Game Brand & Player Rank Badge */}
+    <header className="sticky top-0 z-50 backdrop-blur-2xl bg-[#070918]/90 border-b border-indigo-950/60 px-3 sm:px-6 py-2.5 transition-colors">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 flex-wrap">
+        {/* Brand Logo - Pixel Detective */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
               sounds.playTap();
               onNavigate('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center gap-2 group"
+            className="flex items-center gap-2.5 group cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 via-pink-500 to-amber-400 p-0.5 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-xl">
-                🕵️
+            {/* Cyber Loupe Icon */}
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-600 p-[1.5px] shadow-lg shadow-indigo-500/25 group-hover:shadow-cyan-400/40 group-hover:scale-105 transition-all">
+              <div className="w-full h-full bg-[#080b18] rounded-[14px] flex items-center justify-center text-lg">
+                <span className="animate-pulse">🕵️</span>
               </div>
             </div>
-            <div className="text-left hidden sm:block">
-              <div className="text-sm font-black tracking-tight text-white flex items-center gap-1.5 leading-none">
-                <span>CONVO</span>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500">QUEST</span>
+
+            <div className="text-left flex flex-col">
+              <div className="text-base font-black tracking-wider text-white flex items-center gap-1.5 leading-none">
+                <span>PIXEL</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+                  DETECTIVE
+                </span>
               </div>
-              <div className="text-[10px] font-bold text-slate-400 font-mono tracking-wider">PIXEL DETECTIVE</div>
+              <span className="text-[9px] font-mono font-bold tracking-widest text-slate-400 uppercase">
+                CONVOQUEST STUDIO
+              </span>
             </div>
           </button>
-
-          {/* Gamified Rank Badge */}
-          <div className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border ${rank.badge}`}>
-            <span>⭐</span>
-            <span>{rank.name}</span>
-          </div>
         </div>
 
-        {/* Level Select Pills */}
-        <nav className="flex items-center gap-1 overflow-x-auto py-1 scrollbar-none max-w-full">
-          {NAV_ITEMS.map((item) => {
+        {/* Main Navigation Links (As seen in Reference Image 1) */}
+        <nav className="hidden lg:flex items-center gap-1 text-sm font-semibold text-slate-300">
+          {/* Accueil */}
+          <button
+            onClick={() => {
+              sounds.playTap();
+              onNavigate('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`relative px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer hover:text-white ${
+              currentView === 'home' ? 'text-white font-bold' : ''
+            }`}
+          >
+            <span>Accueil</span>
+            {currentView === 'home' && (
+              <span className="absolute bottom-0 left-3.5 right-3.5 h-[2px] bg-gradient-to-r from-indigo-500 to-purple-500 shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
+            )}
+          </button>
+
+          {/* Modules with dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                sounds.playTap();
+                setModulesDropdownOpen(!modulesDropdownOpen);
+              }}
+              className="px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer hover:text-white flex items-center gap-1"
+            >
+              <span>Modules</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+
+            {modulesDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-64 rounded-2xl bg-[#0b0e24] border border-indigo-500/30 p-2 shadow-2xl backdrop-blur-2xl z-50 space-y-1">
+                {MISSIONS.filter((m) => m.key !== 'home').map((m) => {
+                  const done = finishedMissions.has(m.key);
+                  const unlocked = isUnlocked(m.key);
+
+                  return (
+                    <button
+                      key={m.key}
+                      onClick={() => {
+                        if (unlocked) {
+                          sounds.playTap();
+                          onNavigate(m.key);
+                          setModulesDropdownOpen(false);
+                        } else {
+                          sounds.playWrong();
+                        }
+                      }}
+                      disabled={!unlocked}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                        currentView === m.key
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                          : unlocked
+                          ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                          : 'text-slate-600 opacity-40 cursor-not-allowed'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>{m.icon}</span>
+                        <span>{m.label}</span>
+                      </span>
+                      {done && <span className="text-emerald-400 text-xs font-bold">✓</span>}
+                      {!unlocked && <span className="text-[10px]">🔒</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Challenge (Boss / Mystère) */}
+          <button
+            onClick={() => {
+              sounds.playTap();
+              if (isUnlocked('m5')) {
+                onNavigate('m5');
+              } else {
+                onNavigate('m1');
+              }
+            }}
+            className="px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer hover:text-white"
+          >
+            Challenge
+          </button>
+
+          {/* Classement */}
+          <button
+            onClick={() => {
+              sounds.playTap();
+              scrollToAnchor('modules');
+            }}
+            className="px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer hover:text-white"
+          >
+            Classement
+          </button>
+
+          {/* Ressources */}
+          <button
+            onClick={() => {
+              sounds.playTap();
+              scrollToAnchor('demo');
+            }}
+            className="px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer hover:text-white"
+          >
+            Ressources
+          </button>
+
+          {/* À propos / Notre Équipe */}
+          <button
+            onClick={() => {
+              sounds.playTap();
+              scrollToAnchor('team');
+            }}
+            className="px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer hover:text-white flex items-center gap-1.5"
+          >
+            <span>Notre Équipe</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              3
+            </span>
+          </button>
+        </nav>
+
+        {/* Level Select Quick-Bar for Mobile / Tablet */}
+        <div className="flex lg:hidden items-center gap-1 overflow-x-auto py-1 scrollbar-none max-w-full">
+          {MISSIONS.map((item) => {
             const active = currentView === item.key;
             const done = finishedMissions.has(item.key);
             const unlocked = isUnlocked(item.key);
@@ -107,38 +248,76 @@ export function Header({
                   }
                 }}
                 disabled={!unlocked}
-                className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all whitespace-nowrap select-none ${
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all whitespace-nowrap ${
                   active
-                    ? 'bg-gradient-to-r from-cyan-400 to-pink-500 text-slate-950 shadow-lg shadow-cyan-500/30 scale-105 font-black border-b-2 border-pink-700'
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/30 font-black'
                     : unlocked
-                    ? 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
-                    : 'bg-slate-950/60 text-slate-600 border border-slate-900 cursor-not-allowed opacity-40'
+                    ? 'bg-slate-900/90 text-slate-300 hover:text-white border border-slate-800'
+                    : 'bg-slate-950/40 text-slate-600 opacity-40 cursor-not-allowed'
                 }`}
               >
                 <span>{item.icon}</span>
-                <span className="hidden sm:inline">{item.label}</span>
-                <span className="sm:hidden">{item.short}</span>
+                <span>{item.short}</span>
                 {done && !active && <span className="text-emerald-400 text-xs">✓</span>}
               </button>
             );
           })}
-        </nav>
+        </div>
 
-        {/* Game HUD Status */}
-        <div className="flex items-center gap-2">
-          {/* XP Badge */}
-          <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono text-xs font-extrabold shadow-sm">
-            <span>⚡</span>
+        {/* Right Section: XP Pill, User Profile, Sound & Action Button */}
+        <div className="flex items-center gap-2.5">
+          {/* XP Badge Pill (Reference Image 1: ⚡ 1250 XP) */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-950/70 border border-indigo-500/40 text-indigo-300 font-mono text-xs font-black shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+            <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
             <span>{totalXp} XP</span>
           </div>
 
-          {/* Exam Score */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs font-extrabold shadow-sm">
-            <span className="text-[10px] text-amber-400/80 uppercase">Score</span>
-            <span className="text-amber-400 font-black">{examScore}/100</span>
+          {/* User Profile Avatar Pill with dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                sounds.playTap();
+                setProfileDropdownOpen(!profileDropdownOpen);
+              }}
+              className="flex items-center gap-1.5 p-1 rounded-full bg-slate-900/90 border border-slate-700/80 hover:border-purple-400 transition-all cursor-pointer"
+            >
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-cyan-400 to-purple-500 p-[1.5px] overflow-hidden">
+                <Image
+                  src="/avatar_crop.png"
+                  alt="Detective Avatar"
+                  width={28}
+                  height={28}
+                  className="rounded-full object-cover"
+                />
+              </div>
+              <ChevronDown className="w-3 h-3 text-slate-400 mr-1" />
+            </button>
+
+            {profileDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-[#0b0e24] border border-indigo-500/30 p-3 shadow-2xl backdrop-blur-2xl z-50 space-y-2">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-800">
+                  <div className="text-xs">
+                    <div className="font-bold text-white">Agent Détective</div>
+                    <div className="text-[10px] text-slate-400 font-mono">Score Exam : {examScore}/100</div>
+                  </div>
+                </div>
+                <div className={`px-2 py-1 rounded-lg text-xs font-bold border ${rank.badge} text-center`}>
+                  {rank.name}
+                </div>
+                <button
+                  onClick={() => {
+                    scrollToAnchor('team');
+                    setProfileDropdownOpen(false);
+                  }}
+                  className="w-full text-left text-xs text-slate-300 hover:text-white px-2 py-1.5 rounded-lg hover:bg-slate-800/60"
+                >
+                  👥 Voir Notre Équipe
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Sound Mute/Unmute */}
+          {/* Sound Toggle Button */}
           <button
             onClick={() => {
               onToggleSound();
@@ -149,10 +328,30 @@ export function Header({
                 sounds.enabled = false;
               }
             }}
-            title={soundEnabled ? 'Désactiver les sons' : 'Activer les sons'}
-            className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-sm transition-transform active:scale-95"
+            title={soundEnabled ? 'Désactiver les effets audio' : 'Activer les effets audio'}
+            className="w-8 h-8 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-sm transition-all hover:border-indigo-500/50 cursor-pointer"
           >
-            {soundEnabled ? '🔊' : '🔇'}
+            {soundEnabled ? (
+              <Volume2 className="w-4 h-4 text-cyan-400" />
+            ) : (
+              <VolumeX className="w-4 h-4 text-slate-500" />
+            )}
+          </button>
+
+          {/* Primary Action Button - Commencer (Reference Image 1) */}
+          <button
+            onClick={() => {
+              sounds.playLevelUp();
+              if (currentView === 'home') {
+                onNavigate('m1');
+              } else {
+                onNavigate('home');
+              }
+            }}
+            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:shadow-[0_0_28px_rgba(139,92,246,0.6)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
+            <Gamepad2 className="w-4 h-4" />
+            <span>{currentView === 'home' ? 'Commencer' : 'Quitter'}</span>
           </button>
         </div>
       </div>
